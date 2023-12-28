@@ -1,0 +1,131 @@
+body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 100%;
+}
+
+canvas {
+    position: absolute;
+}
+
+.emotion-status {
+    position: fixed;
+    top: 70px;
+    right: 10px;
+    background-color: #dff0d8;
+    color: #3c763d;
+    padding: 10px 20px;
+    border-radius: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    font-size: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+}
+
+.emotion-status.inactive {
+    background-color: #f2dede;
+    color: #a94442;
+}
+
+#emotionStatusText {
+    margin: 0;
+    width: 100%;
+}
+
+.video-container,
+.button-container {
+    margin-bottom: 20px;
+}
+
+video {
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 20px;
+    flex-wrap: nowrap;
+    width: 100%;
+    max-width: 1280px;
+    padding: 0 20px;
+}
+
+.button-container button {
+    margin: 0 5px;
+    min-width: 160px;
+}
+
+button:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+#pauseBothButton {
+    background-color: rgb(245, 37, 89);
+    color: white;
+}
+
+#pauseButton {
+    background-color: rgb(245, 85, 37);
+    color: white;
+}
+
+#resumeButton {
+    background-color: rgb(37, 89, 245);
+    color: white;
+}
+
+.button-container button {
+    margin: 0 5px;
+}
+
+button:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+}
+
+/* Optional: Styling für den Fortschrittsbalken-Container */
+#emotionProgressContainer {
+    margin-top: 10px;
+    /* Abstand oben hinzufügen */
+    height: 10px;
+    /* Höhe des Balkens */
+    background-color: #eee;
+    /* Hintergrundfarbe des Containers */
+    border-radius: 5px;
+    /* Abgerundete Ecken */
+    overflow: hidden;
+    /* Verhindert das Herausragen von Inhalten */
+}
+
+/* Optional: Allgemeines Styling für den Fortschrittsbalken */
+#emotionProgressBar {
+    height: 10px;
+    /* Höhe des Balkens */
+    background-color: #4caf50;
+    /* Hintergrundfarbe des Balkens */
+    border-radius: 5px;
+    /* Abgerundete Ecken */
+    transition: width 5s linear;
+    /* Animation für den Balken */
+}

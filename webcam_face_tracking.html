@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  <title>Face Recognition & Identification</title>
+  <!-- MDB icon -->
+  <link rel="icon" href="public/img/icon.ico" type="image/x-icon" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css" />
+  <!-- Google Fonts Roboto -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+  <!-- Bootstrap core CSS -->
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+  <!-- Material Design Bootstrap -->
+  <link rel="stylesheet" href="css/mdb.min.css" />
+  <!-- Video JS -->
+  <link href="https://vjs.zencdn.net/7.8.4/video-js.css" rel="stylesheet" />
+  <!-- face-api script -->
+  <script defer src="dist/face-api.min.js"></script>
+  <!-- Main script -->
+  <script defer src="dist/webcam_script.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    canvas {
+      position: absolute;
+    }
+
+    /* Styling für die Statusanzeige */
+    .emotion-status {
+      position: fixed;
+      top: 70px;
+      /* Abstand von oben anpassen */
+      right: 10px;
+      /* Abstand von rechts */
+      background-color: #dff0d8;
+      /* Bootstrap 'success' Hintergrundfarbe */
+      color: #3c763d;
+      /* Bootstrap 'success' Textfarbe */
+      padding: 10px 20px;
+      border-radius: 20px;
+      /* Abgerundete Ecken */
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      /* Schatten für Tiefe */
+      font-size: 1rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1050;
+      /* Über der Navbar */
+    }
+
+    .emotion-status.inactive {
+      background-color: #f2dede;
+      /* Bootstrap 'danger' Hintergrundfarbe */
+      color: #a94442;
+      /* Bootstrap 'danger' Textfarbe */
+    }
+
+
+    #emotionStatusText {
+      margin: 0;
+      /* Entfernt Standard-Außenabstände */
+      width: 100%;
+      /* Erstreckt sich über die gesamte Breite des Elternelements */
+    }
+
+    .video-container,
+    .button-container {
+      margin-bottom: 20px;
+    }
+
+    /* Videoplayer */
+    video {
+      border-radius: 8px;
+      /* Abgerundete Ecken */
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      /* Schatten für Tiefe */
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 20px;
+      flex-wrap: nowrap;
+      /* Buttons dürfen nicht umgebrochen werden */
+      width: 100%;
+      max-width: 1280px;
+      /* Sollte die maximale Breite des Videos oder Containers sein */
+      padding: 0 20px;
+      /* Fügt etwas Platz an den Seiten hinzu */
+    }
+
+    .button-container button {
+      margin: 0 5px;
+      min-width: 160px;
+      /* Stellt sicher, dass die Buttons nicht zu schmal werden */
+    }
+
+
+
+    button:hover {
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      /* Schatten-Effekt beim Darüberfahren */
+    }
+
+    #pauseBothButton {
+      background-color: rgb(245, 37, 89);
+      color: white;
+    }
+
+    #pauseButton {
+      background-color: rgb(245, 85, 37);
+      color: white;
+    }
+
+    #resumeButton {
+      background-color: rgb(37, 89, 245);
+      color: white;
+    }
+
+    /* Buttons einheitlich stylen */
+    .button-container button {
+      margin: 0 5px;
+      /* Abstand zwischen den Buttons */
+    }
+
+    button:disabled {
+      background-color: #cccccc;
+      /* Graue Farbe für deaktivierte Buttons */
+      color: #666666;
+      /* Dunkelgraue Schriftfarbe für deaktivierte Buttons */
+      cursor: not-allowed;
+      /* Cursor für nicht erlaubte Aktion zeigen */
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Start your project here-->
+  <!--Main Navigation-->
+  <header>
+    <nav class="navbar fixed-top navbar-expand-lg navbar-dark primary-color scrolling-navbar">
+      <a class="navbar-brand" href="#"><strong>Face-Recognition</strong></a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+
+          <li class="nav-item active">
+            <a class="nav-link" href="webcam_face_tracking">Webcam Face Tracking<span
+                class="sr-only">(current)</span></a>
+          </li>
+
+        </ul>
+      </div>
+    </nav>
+  </header>
+  <!--Main Navigation-->
+
+  <div class="container py-5">
+    <div class="row py-5">
+      <div class="col-lg-6 mx-auto">
+        <!-- Upload image input-->
+        <div class="input-group-append d-flex justify-content-center">
+          <video id="video" width="1280" height="720" autoplay muted></video>
+        </div>
+      </div>
+    </div>
+    <!-- Container für die Buttons -->
+    <div class="button-container">
+      <button id="pauseBothButton" class="btn">Musik & Erkennung pausieren</button>
+      <button id="pauseButton" class="btn">Erkennung pausieren</button>
+      <button id="resumeButton" class="btn">Erkennung fortsetzen</button>
+    </div>
+
+    <!-- Statusanzeige -->
+    <div id="emotionStatus" class="emotion-status">
+      <p id="emotionStatusText">Emotionserkennung aktiv</p>
+    </div>
+  </div>
+
+
+  <!-- End your project here-->
+
+  <!-- jQuery -->
+  <script type="text/javascript" src="js/jquery.min.js"></script>
+  <!-- Bootstrap tooltips -->
+  <script type="text/javascript" src="js/popper.min.js"></script>
+  <!-- Bootstrap core JavaScript -->
+  <script type="text/javascript" src="js/bootstrap.min.js"></script>
+  <!-- MDB core JavaScript -->
+  <script type="text/javascript" src="js/mdb.min.js"></script>
+  <!-- Video JS -->
+  <script src="https://vjs.zencdn.net/7.8.4/video.js"></script>
+
+  <!-- Audio-Logik-Script -->
+  <script>
+    // Audio-Datei-Pools für jede Emotion
+    const audioPools = {
+      happy: [
+        'assets/audio/happy/Egal135bpm',
+        'assets/audio/happy/September175bpm.mp3',
+        'assets/audio/happy/forALongTime160bpm.mp3',
+        'assets/audio/happy/n3vb49ß08s2_128bpm.mp3',
+        'assets/audio/happy/harpsiwalk120bpmXVeil.mp3',
+      ],
+      sad: [
+        'assets/audio/sad/keinAusweg114bpm.mp3',
+        'assets/audio/sad/Time140bpm.mp3',
+        'assets/audio/sad/sweets144bpm.mp3',
+        'assets/audio/sad/einLetztesMal143bpm.mp3',
+        'assets/audio/sad/bagAfterBag130bpm.mp3',
+      ],
+      fearful: [
+        'assets/audio/fearful/Suspense_BPM105.mp3',
+        'assets/audio/fearful/Suspense_BPM146.mp3',
+        'assets/audio/fearful/Suspense_BPM106.mp3',
+        'assets/audio/fearful/drop142bpm.mp3',
+        'assets/audio/fearful/nurEinStück132bpm.mp3',
+        'assets/audio/fearful/Cinematic_Electro_BPM120.mp3',
+      ],
+      angry: [
+        'assets/audio/angry/Suspense_BPM96.mp3',
+        'assets/audio/angry/deathracer_163bpm.mp3',
+        'assets/audio/angry/NotYourType_165bpm_A_Major.mp3',
+        'assets/audio/angry/Suspense_BPM96.mp3',
+        'assets/audio/angry/Suspense__BPM106.mp3',
+        'assets/audio/angry/Suspense__BPM146.mp3',
+        'assets/audio/angry/I_mNeverComingHome_160bpm.mp3',
+        'assets/audio/angry/toxic172bpm.mp3',
+      ],
+      disgusted: [
+        'assets/audio/disgusted/mysterious-celesta-114064.mp3',
+
+      ],
+      surprised: [
+        'assets/audio/surprised/vivaldi-the-four-seasons-quotsummerquot-presto-rv-315-175720.mp3',
+      ],
+      // Weitere Emotionen und zugehörige Audiodateien können hier hinzugefügt werden
+    };
+    // Globale Variablen
+    let currentAudio = null;
+    let emotionLock = false;
+    let isPaused = false;
+
+    // Funktion zur zufälligen Auswahl und Abspielen einer Audiodatei
+    function playAudioForEmotion(emotion) {
+      if (isPaused || emotion === 'neutral') {
+        console.log("Playback paused or neutral expression detected. No action taken.");
+        return;
+      }
+
+      if (emotionLock) {
+        console.log("Emotion lock is active. Please wait.");
+        return;
+      }
+
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+
+      const audioFiles = audioPools[emotion];
+      if (!audioFiles || audioFiles.length === 0) {
+        console.log(`No audio files found for the emotion: ${emotion}`);
+        return;
+      }
+
+      const selectedAudioFile = audioFiles[Math.floor(Math.random() * audioFiles.length)];
+      currentAudio = new Audio(selectedAudioFile);
+      currentAudio.play();
+
+      console.log(`Playing audio for ${emotion}: ${selectedAudioFile}`);
+
+      // Emotionssperre setzen
+      emotionLock = true;
+      updateEmotionStatus(false); // Setze Status auf inaktiv
+
+      // Emotionssperre nach 5 Sekunden aufheben
+      setTimeout(() => {
+        emotionLock = false;
+        if (!isPaused) {
+          updateEmotionStatus(true); // Setze Status auf aktiv, wenn nicht pausiert
+        }
+      }, 5000);
+
+
+
+    }
+
+    // Globale Variable, um den Zeitpunkt der letzten Erkennung zu speichern
+    let lastEmotionDetectedTime = 0;
+
+    document.addEventListener('DOMContentLoaded', function () {
+      // Buttons
+      const pauseButton = document.getElementById('pauseButton');
+      const resumeButton = document.getElementById('resumeButton');
+      const pauseBothButton = document.getElementById('pauseBothButton');
+
+      // Statusanzeige aktualisieren
+      function updateEmotionStatus(active) {
+        const statusElement = document.getElementById('emotionStatus');
+        const statusText = document.getElementById('emotionStatusText');
+
+        if (active) {
+          statusElement.classList.remove('inactive');
+          statusText.textContent = 'Emotionserkennung aktiv';
+          statusElement.style.backgroundColor = '#dff0d8';
+          statusElement.style.color = '#3c763d';
+        } else {
+          statusElement.classList.add('inactive');
+          statusText.textContent = 'Emotionserkennung inaktiv';
+          statusElement.style.backgroundColor = '#f2dede';
+          statusElement.style.color = '#a94442';
+        }
+      }
+
+      // Funktion zum Pausieren der Erkennung
+      function pauseRecognition() {
+        isPaused = true;
+        updateEmotionStatus(false);
+        console.log("Emotion recognition paused.");
+        // Button-Zustände aktualisieren
+        pauseButton.disabled = true;
+        resumeButton.disabled = false;
+        pauseBothButton.disabled = false;
+      }
+
+      // Funktion zum Pausieren von Musik und Erkennung
+      function pauseBoth() {
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0; // Audio zurücksetzen
+        }
+        isPaused = true;
+        updateEmotionStatus(false);
+        console.log("Music and emotion recognition paused.");
+        // Button-Zustände aktualisieren
+        pauseButton.disabled = true;
+        resumeButton.disabled = false;
+        pauseBothButton.disabled = true;
+      }
+
+      // Funktion zum Fortsetzen der Erkennung
+      function resumeRecognition() {
+        isPaused = false;
+        // Stelle sicher, dass der emotionLock aufgehoben wird
+        emotionLock = false;
+        updateEmotionStatus(true); // Setze Status auf aktiv
+        console.log("Recognition resumed.");
+
+        // Button-Zustände aktualisieren
+        pauseButton.disabled = false;
+        resumeButton.disabled = true;
+        pauseBothButton.disabled = false;
+      }
+
+
+      // Event-Listener für Buttons
+      pauseButton.addEventListener('click', pauseRecognition);
+      pauseBothButton.addEventListener('click', pauseBoth);
+      resumeButton.addEventListener('click', resumeRecognition);
+
+      // Initialisieren Sie den Resume-Button als deaktiviert
+      resumeButton.disabled = true;
+
+      // Initialisierung des Status
+      updateEmotionStatus(true);
+    });
+
+
+    function updateEmotionStatus(active) {
+      const statusElement = document.getElementById('emotionStatus');
+      const statusText = document.getElementById('emotionStatusText');
+
+      if (active) {
+        statusElement.classList.remove('inactive');
+        statusText.textContent = 'Emotionserkennung aktiv';
+        statusElement.style.backgroundColor = '#dff0d8';
+        statusElement.style.color = '#3c763d';
+      } else {
+        statusElement.classList.add('inactive');
+        statusText.textContent = 'Emotionserkennung inaktiv';
+        statusElement.style.backgroundColor = '#f2dede';
+        statusElement.style.color = '#a94442';
+      }
+    }
+
+
+  </script>
+</body>
+
+</html>
