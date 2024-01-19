@@ -164,31 +164,32 @@
     }
 
   function updateTimer() {
-    if (emotionTimer > 0) {
-      emotionTimer--;
-      updateTimerDisplay(emotionTimer); // Timeranzeige aktualisieren
-    } else {
-      if (currentEmotion !== 'neutral') { // Überprüfen, ob die aktuelle Emotion nicht neutral ist
-        if (currentAudio) {
-          currentAudio.pause();
-          currentAudio.currentTime = 0;
-        }
+  if (emotionTimer > 0) {
+    emotionTimer--;
+    updateTimerDisplay(emotionTimer);
+  } else {
+    if (currentEmotion !== 'neutral') {
+      const audioFiles = audioPools[currentEmotion];
+      const selectedAudioFile = audioFiles[Math.floor(Math.random() * audioFiles.length)];
 
-        const audioFiles = audioPools[currentEmotion];
-        if (!audioFiles || audioFiles.length === 0) {
-          console.log(`No audio files found for the emotion: ${currentEmotion}`);
-          return;
-        }
-
-        const selectedAudioFile = audioFiles[Math.floor(Math.random() * audioFiles.length)];
-        currentAudio = new Audio(selectedAudioFile);
-        currentAudio.play();
-        console.log(`Playing audio for ${currentEmotion}: ${selectedAudioFile}`);
+      if (currentAudio) {
+        fadeOutAudio(currentAudio); // Startet den Fade-Out-Prozess
       }
-      clearInterval(emotionInterval); // Stoppe den Timer
-      resetTimer(); // Setze den Timer zurück
+      
+      // Erstellt und startet das neue Audio mit Fade-In, unabhängig vom aktuellen Audio
+      const newAudio = new Audio(selectedAudioFile);
+      fadeInAudio(newAudio);
+      currentAudio = newAudio; // Aktualisiert das aktuelle Audio
+
+      console.log(`Playing audio for ${currentEmotion}: ${selectedAudioFile}`);
     }
+    clearInterval(emotionInterval);
+    resetTimer();
   }
+}
+
+
+
   // Funktion zum Zurücksetzen des Timers
     function resetTimer() {
       emotionTimer = 3; // Timer auf 3 Sekunden zurücksetzen
@@ -196,14 +197,14 @@
     }
 
 // Funktion zum Starten des Timers
-    function startTimer(newEmotion) {
-      if (currentEmotion !== newEmotion) {
-        currentEmotion = newEmotion;
-        clearInterval(emotionInterval); // Vorherigen Timer stoppen, falls vorhanden
-        resetTimer(); // Timer zurücksetzen
-        emotionInterval = setInterval(updateTimer, 1000); // Timer jede Sekunde aktualisieren
-      }
+  function startTimer(newEmotion) {
+    if (currentEmotion !== newEmotion) {
+      currentEmotion = newEmotion;
+      clearInterval(emotionInterval); // Vorherigen Timer stoppen, falls vorhanden
+      resetTimer(); // Timer zurücksetzen
+      emotionInterval = setInterval(updateTimer, 1000); // Timer jede Sekunde aktualisieren
     }
+  }
 
 // Funktion zum Aktualisieren der Timeranzeige
     function updateTimerDisplay(time, isActive = true) {
@@ -216,4 +217,41 @@
         timerElement.style.backgroundColor = 'red';
       }
     }
+
+
+// Funktion zum langsamen Ausblenden (Fade-Out) des aktuellen Audios
+function fadeOutAudio(audio) {
+  var fadeAudio = setInterval(function () {
+    // Überprüfen, ob die Lautstärke noch über 0.05 liegt
+    if ((audio.volume - 0.05) > 0) {
+      audio.volume -= 0.05; // Reduziere die Lautstärke schrittweise
+    } else {
+      // Wenn die Lautstärke 0 erreicht oder unterschreitet
+      audio.pause(); // Pausiere das Audio
+      audio.currentTime = 0; // Setze die Abspielposition auf den Anfang
+      audio.volume = 1; // Setze die Lautstärke zurück auf den Normalwert für das nächste Mal
+      clearInterval(fadeAudio); // Beende den Intervall-Timer
+    }
+  }, 200); // Intervall von 200 Millisekunden für die schrittweise Lautstärkereduzierung
+}
+
+
+
+// Funktion zum langsamen Einblenden (Fade-In) des neuen Audios
+function fadeInAudio(audio) {
+  audio.volume = 0; // Starte mit einer Lautstärke von 0
+  audio.play(); // Beginne mit dem Abspielen des Audios
+
+  var fadeAudio = setInterval(function () {
+    // Überprüfen, ob die Lautstärke noch unter 0.95 liegt
+    if ((audio.volume + 0.05) < 1) {
+      audio.volume += 0.05; // Erhöhe die Lautstärke schrittweise
+    } else {
+      // Wenn die Lautstärke 1 erreicht oder überschreitet
+      audio.volume = 1; // Setze die Lautstärke auf den Maximalwert
+      clearInterval(fadeAudio); // Beende den Intervall-Timer
+    }
+  }, 200); // Intervall von 200 Millisekunden für die schrittweise Lautstärkeerhöhung
+}
+
 
