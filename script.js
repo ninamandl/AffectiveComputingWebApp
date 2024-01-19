@@ -48,7 +48,7 @@
     let emotionLock = false;
     let isPaused = false;
     let currentEmotion = '';
-    let emotionTimer = 5; // 5 Sekunden Countdown
+    let emotionTimer = 3; // 3 Sekunden Countdown
     let emotionInterval;
 
     // Funktion zur zufälligen Auswahl und Abspielen einer Audiodatei
@@ -191,7 +191,7 @@
   }
   // Funktion zum Zurücksetzen des Timers
     function resetTimer() {
-      emotionTimer = 5; // Timer auf 5 Sekunden zurücksetzen
+      emotionTimer = 3; // Timer auf 3 Sekunden zurücksetzen
       updateTimerDisplay(emotionTimer, false); // Timeranzeige zurücksetzen und Farbe auf Grün ändern
     }
 
