@@ -129,3 +129,19 @@ button:disabled {
     transition: width 5s linear;
     /* Animation für den Balken */
 }
+
+.emotion-timer {
+    width: 50px;
+    height: 50px;
+    border-radius: 25px;
+    background-color: red;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    position: fixed;
+    top: 150px;
+    right: 20px;
+    z-index: 1000;
+}

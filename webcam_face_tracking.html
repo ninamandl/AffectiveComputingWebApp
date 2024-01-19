@@ -156,6 +156,23 @@
       cursor: not-allowed;
       /* Cursor für nicht erlaubte Aktion zeigen */
     }
+
+    .emotion-timer {
+      width: 50px;
+      height: 50px;
+      border-radius: 25px;
+      background-color: red;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 20px;
+      position: fixed;
+      top: 150px;
+      right: 20px;
+      z-index: 1000;
+}
+
   </style>
 </head>
 
@@ -205,6 +222,10 @@
     </div>
   </div>
 
+  <!-- Timer -->
+  <div id="emotionTimer" class="emotion-timer">5</div>
+
+
 
   <!-- End your project here-->
 
@@ -224,7 +245,7 @@
     // Audio-Datei-Pools für jede Emotion
     const audioPools = {
       happy: [
-        'assets/audio/happy/Egal135bpm',
+        'assets/audio/happy/Egal135bpm.mp3',
         'assets/audio/happy/September175bpm.mp3',
         'assets/audio/happy/forALongTime160bpm.mp3',
         'assets/audio/happy/n3vb49ß08s2_128bpm.mp3',
@@ -264,66 +285,33 @@
       ],
       // Weitere Emotionen und zugehörige Audiodateien können hier hinzugefügt werden
     };
+    
     // Globale Variablen
     let currentAudio = null;
     let emotionLock = false;
     let isPaused = false;
+    let currentEmotion = '';
+    let emotionTimer = 5; // 5 Sekunden Countdown
+    let emotionInterval;
 
     // Funktion zur zufälligen Auswahl und Abspielen einer Audiodatei
-    function playAudioForEmotion(emotion) {
-      if (isPaused || emotion === 'neutral') {
-        console.log("Playback paused or neutral expression detected. No action taken.");
-        return;
-      }
-
-      if (emotionLock) {
-        console.log("Emotion lock is active. Please wait.");
-        return;
-      }
-
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-      }
-
-      const audioFiles = audioPools[emotion];
-      if (!audioFiles || audioFiles.length === 0) {
-        console.log(`No audio files found for the emotion: ${emotion}`);
-        return;
-      }
-
-      const selectedAudioFile = audioFiles[Math.floor(Math.random() * audioFiles.length)];
-      currentAudio = new Audio(selectedAudioFile);
-      currentAudio.play();
-
-      console.log(`Playing audio for ${emotion}: ${selectedAudioFile}`);
-
-      // Emotionssperre setzen
-      emotionLock = true;
-      updateEmotionStatus(false); // Setze Status auf inaktiv
-
-      // Emotionssperre nach 5 Sekunden aufheben
-      setTimeout(() => {
-        emotionLock = false;
-        if (!isPaused) {
-          updateEmotionStatus(true); // Setze Status auf aktiv, wenn nicht pausiert
+      function playAudioForEmotion(emotion) {
+        if (isPaused || emotion === 'neutral') {
+          console.log("Playback paused or neutral expression detected. No action taken.");
+          resetTimer();
+          return;
         }
-      }, 5000);
+
+        if (emotionLock) {
+          console.log("Emotion lock is active. Please wait.");
+          return;
+        }
+
+        startTimer(emotion); // Startet den Timer, wenn eine neue Emotion erkannt wird
+      }
 
 
-
-    }
-
-    // Globale Variable, um den Zeitpunkt der letzten Erkennung zu speichern
-    let lastEmotionDetectedTime = 0;
-
-    document.addEventListener('DOMContentLoaded', function () {
-      // Buttons
-      const pauseButton = document.getElementById('pauseButton');
-      const resumeButton = document.getElementById('resumeButton');
-      const pauseBothButton = document.getElementById('pauseBothButton');
-
-      // Statusanzeige aktualisieren
+    // Statusanzeige aktualisieren
       function updateEmotionStatus(active) {
         const statusElement = document.getElementById('emotionStatus');
         const statusText = document.getElementById('emotionStatusText');
@@ -340,6 +328,12 @@
           statusElement.style.color = '#a94442';
         }
       }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      // Buttons
+      const pauseButton = document.getElementById('pauseButton');
+      const resumeButton = document.getElementById('resumeButton');
+      const pauseBothButton = document.getElementById('pauseBothButton');
 
       // Funktion zum Pausieren der Erkennung
       function pauseRecognition() {
@@ -409,6 +403,60 @@
         statusText.textContent = 'Emotionserkennung inaktiv';
         statusElement.style.backgroundColor = '#f2dede';
         statusElement.style.color = '#a94442';
+      }
+    }
+
+  function updateTimer() {
+    if (emotionTimer > 0) {
+      emotionTimer--;
+      updateTimerDisplay(emotionTimer); // Timeranzeige aktualisieren
+    } else {
+      if (currentEmotion !== 'neutral') { // Überprüfen, ob die aktuelle Emotion nicht neutral ist
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        }
+
+        const audioFiles = audioPools[currentEmotion];
+        if (!audioFiles || audioFiles.length === 0) {
+          console.log(`No audio files found for the emotion: ${currentEmotion}`);
+          return;
+        }
+
+        const selectedAudioFile = audioFiles[Math.floor(Math.random() * audioFiles.length)];
+        currentAudio = new Audio(selectedAudioFile);
+        currentAudio.play();
+        console.log(`Playing audio for ${currentEmotion}: ${selectedAudioFile}`);
+      }
+      clearInterval(emotionInterval); // Stoppe den Timer
+      resetTimer(); // Setze den Timer zurück
+    }
+  }
+  // Funktion zum Zurücksetzen des Timers
+    function resetTimer() {
+      emotionTimer = 5; // Timer auf 5 Sekunden zurücksetzen
+      updateTimerDisplay(emotionTimer, false); // Timeranzeige zurücksetzen und Farbe auf Grün ändern
+    }
+
+// Funktion zum Starten des Timers
+    function startTimer(newEmotion) {
+      if (currentEmotion !== newEmotion) {
+        currentEmotion = newEmotion;
+        clearInterval(emotionInterval); // Vorherigen Timer stoppen, falls vorhanden
+        resetTimer(); // Timer zurücksetzen
+        emotionInterval = setInterval(updateTimer, 1000); // Timer jede Sekunde aktualisieren
+      }
+    }
+
+// Funktion zum Aktualisieren der Timeranzeige
+    function updateTimerDisplay(time, isActive = true) {
+      const timerElement = document.getElementById('emotionTimer');
+      timerElement.textContent = time.toString();
+      // Wenn der Timer bei 0 ist, wechsle die Farbe zu Rot, sonst Grün
+      if (time === 0) {
+        timerElement.style.backgroundColor = 'green';
+      } else {
+        timerElement.style.backgroundColor = 'red';
       }
     }
 
